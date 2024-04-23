@@ -13,7 +13,12 @@ async function run() {
         const requisites = await sendRequest(`${API.orgReqs}?ogrn=${ogrns}`);
         const orgsMap = reqsToMap(requisites);
 
-        const analytics = await sendRequest(`${API.analytics}?ogrn=${ogrns}`);
+        const analytics = await sendRequest(`${API.analitics}?ogrn=${ogrns}`);
+
+        if (analytics === undefined) {
+            return;
+        }
+
         addInOrgsMap(orgsMap, analytics, "analytics");
 
         const buh = await sendRequest(`${API.buhForms}?ogrn=${ogrns}`);
@@ -32,14 +37,17 @@ function sendRequest(url) {
     return fetch(url)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.status >= 300) {
+                    alert(response.status + " : " + response.statusText);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
             } else {
                 return response.json();
             }
         })
         .catch(error => {
             console.error('Ошибка:', error);
-            throw error; // Переброс ошибки для обработки вызывающей стороной
         });
 }
 
